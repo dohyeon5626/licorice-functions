@@ -1,6 +1,12 @@
+from dotenv import load_dotenv
+import os
 import json
+import jwt
 import requests
 import base64
+
+load_dotenv()
+SECRET_KEY = os.environ.get('SECRET_KEY')
 
 def lambda_handler(event, context):
     try:
@@ -13,6 +19,10 @@ def lambda_handler(event, context):
         }
 
     url = f"https://raw.githubusercontent.com/{path}"
+    
+    if(token.startswith("ey")):
+        token = jwt.decode(token, SECRET_KEY, algorithms="HS256")["token"]
+    
     headers = {
         'Authorization': f'token {token}'
     }

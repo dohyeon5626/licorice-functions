@@ -8,26 +8,52 @@ import base64
 load_dotenv()
 SECRET_KEY = os.environ.get('SECRET_KEY')
 
+BadRequestResponse = {
+    'statusCode': 400,
+    'body': json.dumps('Bad Request')
+}
+
+InvalidTokenResponse = {
+    'statusCode': 401,
+    'body': json.dumps('Invalid token')
+}
+
 def lambda_handler(event, context):
-    try:
-        token = event['pathParameters']['token']
-        path = event['pathParameters']['proxy']
-    except KeyError as e:
-        return {
-            'statusCode': 400,
-            'body': json.dumps(f"Missing parameter: {str(e)}")
+    pathParameters = event.get('pathParameters')
+    
+    if pathParameters and 'token' in pathParameters and 'proxy' in pathParameters:
+        token = pathParameters['token']
+        path = pathParameters['proxy']
+        pathList = path.split('/')
+        if (len(pathList) >= 2):
+            user = pathList[0]
+            repo = pathList[1]
+        else:
+            return BadRequestResponse
+    else:
+        return BadRequestResponse
+
+    
+    if(token.startswith('ey')):
+        payload = jwt.decode(token, SECRET_KEY, algorithms='HS256')
+        try:
+            payload = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
+            if 'token' in payload and \
+                'user' in payload and 'repo' in payload and \
+                payload['user'] == user and payload['repo'] == repo:
+                    token = payload['token']
+            else:
+                return InvalidTokenResponse
+        except jwt.ExpiredSignatureError | jwt.InvalidTokenError:
+            return InvalidTokenResponse
+            
+
+    response = requests.get(
+        f'https://raw.githubusercontent.com/{path}',
+        headers = {
+            'Authorization': f'token {token}'
         }
-
-    url = f"https://raw.githubusercontent.com/{path}"
-    
-    if(token.startswith("ey")):
-        token = jwt.decode(token, SECRET_KEY, algorithms="HS256")["token"]
-    
-    headers = {
-        'Authorization': f'token {token}'
-    }
-
-    response = requests.get(url, headers = headers)
+    )
 
     return {
         'statusCode': response.status_code,

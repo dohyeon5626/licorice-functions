@@ -5,11 +5,30 @@ from unittest.mock import patch, Mock
 from handler import lambda_handler
 import base64
 import jwt
+import json
 
 load_dotenv()
 SECRET_KEY = os.environ.get('SECRET_KEY')
 
 class LambdaHandlerTest(unittest.TestCase):
+    
+    @patch('handler.requests.get')
+    def test_bad_request(self, mock_get):
+        eventList = [
+            {},
+            {'pathParameters': {}}
+        ]
+        context = None
+        
+        for event in eventList:
+            # when
+            response = lambda_handler(event, context)
+            
+            # then
+            self.assertEqual(response, {
+                'statusCode': 400,
+                'body': json.dumps('Bad Request')
+            })
     
     @patch('handler.requests.get')
     def test_raw_token(self, mock_get):
@@ -26,12 +45,11 @@ class LambdaHandlerTest(unittest.TestCase):
         event = {
             'pathParameters': {
                 'token' : 'ghp_TOKEN',
-                'proxy' : 'PATH'
+                'proxy' : 'USER/REPO/main/test/test.css'
             }
         }
         context = None
         response = lambda_handler(event, context)
-        print(response)
         
         # then
         self.assertEqual(response, {
@@ -46,7 +64,7 @@ class LambdaHandlerTest(unittest.TestCase):
             'isBase64Encoded': True
         })
         mock_get.assert_called_once_with(
-            'https://raw.githubusercontent.com/PATH',
+            'https://raw.githubusercontent.com/USER/REPO/main/test/test.css',
             headers = {
                 'Authorization': 'token ghp_TOKEN'
             }
@@ -67,14 +85,15 @@ class LambdaHandlerTest(unittest.TestCase):
         event = {
             'pathParameters': {
                 'token' : jwt.encode({
-                    "token": "ghp_TOKEN"
-                }, SECRET_KEY, algorithm="HS256"),
-                'proxy' : 'PATH'
+                    'token': 'ghp_TOKEN',
+                    'user': 'USER',
+                    'repo': 'REPO'
+                }, SECRET_KEY, algorithm='HS256'),
+                'proxy' : 'USER/REPO/main/test/test.css'
             }
         }
         context = None
         response = lambda_handler(event, context)
-        print(response)
         
         # then
         self.assertEqual(response, {
@@ -89,7 +108,7 @@ class LambdaHandlerTest(unittest.TestCase):
             'isBase64Encoded': True
         })
         mock_get.assert_called_once_with(
-            'https://raw.githubusercontent.com/PATH',
+            'https://raw.githubusercontent.com/USER/REPO/main/test/test.css',
             headers = {
                 'Authorization': 'token ghp_TOKEN'
             }

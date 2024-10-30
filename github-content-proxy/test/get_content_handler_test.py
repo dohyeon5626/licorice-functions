@@ -2,7 +2,7 @@ from dotenv import load_dotenv
 import os
 import unittest
 from unittest.mock import patch, Mock
-from handler import lambda_handler
+from src.get_content_handler import lambda_handler
 import base64
 import jwt
 import json
@@ -12,7 +12,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 
 class LambdaHandlerTest(unittest.TestCase):
     
-    @patch('handler.requests.get')
+    @patch('src.get_content_handler.requests.get')
     def test_bad_request(self, mock_get):
         eventList = [
             {},
@@ -30,7 +30,7 @@ class LambdaHandlerTest(unittest.TestCase):
                 'body': json.dumps('Bad Request')
             })
     
-    @patch('handler.requests.get')
+    @patch('src.get_content_handler.requests.get')
     def test_raw_token(self, mock_get):
         # given
         mock_response = Mock()
@@ -70,7 +70,7 @@ class LambdaHandlerTest(unittest.TestCase):
             }
         )
         
-    @patch('handler.requests.get')
+    @patch('src.get_content_handler.requests.get')
     def test_jwt(self, mock_get):
         # given
         mock_response = Mock()

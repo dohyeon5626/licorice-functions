@@ -1,1 +1,1 @@
-python3 -m unittest handler_test.py
+python3 -m unittest test/get_content_handler_test.py

@@ -12,8 +12,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 
 class LambdaHandlerTest(unittest.TestCase):
     
-    @patch('src.get_content_handler.requests.get')
-    def test_bad_request(self, mock_get):
+    def test_bad_request(self):
         eventList = [
             {},
             {'pathParameters': {}}

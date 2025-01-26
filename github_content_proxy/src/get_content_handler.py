@@ -35,7 +35,6 @@ def lambda_handler(event, context):
 
     
     if(token.startswith('ey')):
-        payload = jwt.decode(token, SECRET_KEY, algorithms='HS256')
         try:
             payload = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
             if 'token' in payload and \

@@ -15,9 +15,10 @@ BadRequestResponse = {
 def lambda_handler(event, context):
     body = json.loads(event.get('body'))
     
-    if event and 'user' in body and 'repo' in body:
+    if event and 'user' in body and 'repo' in body and 'token' in body:
         user = body['user']
         repo = body['repo']
+        githubToken = body['token']
     else:
         return BadRequestResponse
     
@@ -25,6 +26,7 @@ def lambda_handler(event, context):
         payload = {
             'user' : user,
             'repo' : repo,
+            'token' : githubToken,
             'exp' : time.time() + 3600
         },
         key = SECRET_KEY,

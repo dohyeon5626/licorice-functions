@@ -14,12 +14,14 @@ class LambdaHandlerTest(unittest.TestCase):
         # given
         user = 'USER'
         repo = 'REPO'
+        githubToken = "GITHUB_TOKEN"
         
         # when
         event = {
             'body' : json.dumps({
                 'user' : user,
-                'repo' : repo
+                'repo' : repo,
+                'token' : githubToken
             })
         }
         context = None
@@ -38,6 +40,7 @@ class LambdaHandlerTest(unittest.TestCase):
         payload = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
         self.assertEqual(payload['user'], user)
         self.assertEqual(payload['repo'], repo)
+        self.assertEqual(payload['token'], githubToken)
 
 if __name__ == '__main__':
     unittest.main()

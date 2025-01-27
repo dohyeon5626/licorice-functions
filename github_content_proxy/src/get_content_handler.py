@@ -43,7 +43,7 @@ def lambda_handler(event, context):
                     token = payload['token']
             else:
                 return InvalidTokenResponse
-        except jwt.ExpiredSignatureError | jwt.InvalidTokenError:
+        except Exception:
             return InvalidTokenResponse
             
 

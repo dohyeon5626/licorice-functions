@@ -1,4 +1,4 @@
-# licorice functions
+# licorice functions
 ![GitHub License](https://img.shields.io/github/license/dohyeon5626/licorice-api-collection?style=flat&color=green)
 
 각종 개인 프로젝트을 위한 서버리스 프로젝트입니다. *(약방에 감초)*  

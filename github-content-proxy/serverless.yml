@@ -1,0 +1,16 @@
+org: dohyeon5626
+app: licorice-functions
+service: github-content-proxy
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+
+functions:
+  api:
+    handler: handler.handler
+    events:
+      - httpApi: "*"
+
+plugins:
+  - serverless-offline

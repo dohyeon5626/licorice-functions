@@ -1,12 +1,13 @@
 const serverless = require("serverless-http");
 const express = require("express");
-
 const app = express();
+const cors = require("cors");
 const jwt = require("jsonwebtoken");
 const axios = require("axios");
 
 const SECRET_KEY = process.env.SECRET_KEY;
 
+app.use(cors());
 app.use(express.json());
 
 app.get("/content/:token/*", async (req, res, next) => {

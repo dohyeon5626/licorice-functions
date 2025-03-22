@@ -7,6 +7,8 @@ const axios = require("axios");
 
 const SECRET_KEY = process.env.SECRET_KEY;
 
+app.use(express.json());
+
 app.get("/content/:token/*", async (req, res, next) => {
   const { token } = req.params;
   const proxyPath = req.params[0];
@@ -58,6 +60,32 @@ app.get("/content/:token/*", async (req, res, next) => {
   } catch (error) {
     console.log(error)
     return res.status(error.response?.status || 500).json({ error: "Failed to fetch content" });
+  }
+});
+
+app.post("/token", async (req, res, next) => {
+  try {
+    const { user, repo, token: githubToken } = req.body;
+    
+    if (!user || !repo || !githubToken) {
+      return res.status(400).json({ error: "Bad Request" });
+    }
+    
+    const token = jwt.sign(
+        {
+            user,
+            repo,
+            token: githubToken,
+            exp: Math.floor(Date.now() / 1000) + 3600
+        },
+        SECRET_KEY,
+        { algorithm: 'HS256' }
+    );
+
+    return res.status(200).json({ token: token });
+  } catch (error) {
+    console.log(error)
+    return res.status(error.response?.status || 500).json({ error: "Failed to create token" });
   }
 });
 

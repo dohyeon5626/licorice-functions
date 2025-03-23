@@ -1,6 +1,6 @@
 {
   "unknown": {
-    "versionFramework": "4.8.0",
+    "versionFramework": "4.9.0",
     "command": [],
     "options": {},
     "serviceProviderAwsCfStackId": null,

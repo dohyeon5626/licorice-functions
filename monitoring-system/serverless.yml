@@ -1,0 +1,17 @@
+org: dohyeon5626
+app: licorice-functions
+service: monitoring-system
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+
+functions:
+  rateHandler:
+    handler: handler.run
+    events:
+      - schedule: rate(1 minute)
+
+package:
+  exclude:
+    - .env

@@ -10,8 +10,4 @@ functions:
   rateHandler:
     handler: handler.run
     events:
-      - schedule: rate(1 minute)
-
-package:
-  exclude:
-    - .env
+      - schedule: cron(0 0 0 * ? *)

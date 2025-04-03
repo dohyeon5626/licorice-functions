@@ -1,12 +1,10 @@
-const serverless = require("serverless-http");
-const express = require("express");
+import { createJWE, decryptJWE } from './service/tokenService.js';
+import serverless from "serverless-http";
+import express from "express";
+import cors from "cors";
+import axios from "axios";
+
 const app = express();
-const cors = require("cors");
-const jwt = require("jsonwebtoken");
-const axios = require("axios");
-
-const SECRET_KEY = process.env.SECRET_KEY;
-
 app.use(cors());
 app.use(express.json());
 
@@ -29,7 +27,7 @@ app.get("/content/:token/*", async (req, res, next) => {
   let authToken = token;
   if (token.startsWith("ey")) {
     try {
-      const payload = jwt.verify(token, SECRET_KEY);
+      const payload = await decryptJWE(token);
       if (
         payload.token &&
         payload.user &&
@@ -72,16 +70,7 @@ app.post("/token", async (req, res, next) => {
       return res.status(400).json({ error: "Bad Request" });
     }
     
-    const token = jwt.sign(
-        {
-            user,
-            repo,
-            token: githubToken,
-            exp: Math.floor(Date.now() / 1000) + 3600
-        },
-        SECRET_KEY,
-        { algorithm: 'HS256' }
-    );
+    const token = await createJWE(user, repo, githubToken);
 
     return res.status(200).json({ token: token });
   } catch (error) {
@@ -94,6 +83,6 @@ app.use((req, res, next) => {
   return res.status(404).json({ error: "Not Found" });
 });
 
-exports.handler = serverless(app, {
+export const handler = serverless(app, {
   binary: ['*/*']
 });

@@ -34,9 +34,9 @@ exports.run = async () => {
       "priority": 5,
       "click": "none"
     }));
-
-    await Promise.all(alarm);
   }
+
+  await Promise.all(alarm);
 };
 
 /* Github Html Preview Extension 사용자 수 */

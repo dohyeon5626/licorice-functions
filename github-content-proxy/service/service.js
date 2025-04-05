@@ -1,4 +1,4 @@
-import { generateSecret, exportJWK, CompactEncrypt, compactDecrypt } from 'jose';
+import { CompactEncrypt, compactDecrypt } from 'jose';
 
 let SECRET_KEY = new Uint8Array(Buffer.from(process.env.SECRET_KEY, 'base64'));;
 
@@ -20,7 +20,6 @@ export const decryptJWE = async (jwe) => {
     
     return payload;
   } catch (error) {
-    console.log(error)
-      throw new Error('JWE 복호화 실패: ' + error.message);
+      throw new Error('Invalid Token');
   }
 };

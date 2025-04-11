@@ -1,6 +1,5 @@
-import axios from "axios";
 import { Router } from "express";
-import { createJWE, decryptJWE } from '../service/service.js';
+import { getContent, createJWE } from '../service/service.js';
 
 const router = Router();
 
@@ -17,40 +16,9 @@ router.get("/content/:token/*", async (req, res, next) => {
     throw new Error('Bad Request');
   }
 
-  const user = pathList[0];
-  const repo = pathList[1];
-
-  let authToken = token;
-  if (token.startsWith("ey")) {
-    const payload = await decryptJWE(token);
-    if (
-      payload.token &&
-      payload.user &&
-      payload.repo &&
-      payload.user === user &&
-      payload.repo === repo
-    ) {
-      authToken = payload.token;
-    } else {
-      throw new Error('Invalid Token');
-    }
-  }
-
-  try {
-    const response = await axios.get(`https://raw.githubusercontent.com/${proxyPath}`, {
-      headers: {
-        Authorization: `token ${authToken}`
-      },
-      responseType: 'arraybuffer'
-    });
-
-    res.setHeader('Content-Type', response.headers['content-type']);
-
-    return res.status(response.status).send(Buffer.from(response.data));
-
-  } catch (error) {
-    throw new Error('Failed Github Request');
-  }
+  const response = await getContent(pathList[0], pathList[1], proxyPath, token);
+  res.setHeader('Content-Type', response.headers['content-type']);
+  return res.status(response.status).send(Buffer.from(response.data));
 });
 
 router.post("/token", async (req, res, next) => {

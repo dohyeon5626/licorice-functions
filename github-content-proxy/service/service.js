@@ -1,6 +1,37 @@
+import axios from "axios";
 import { CompactEncrypt, compactDecrypt } from 'jose';
 
-let SECRET_KEY = new Uint8Array(Buffer.from(process.env.SECRET_KEY, 'base64'));;
+let SECRET_KEY = new Uint8Array(Buffer.from(process.env.SECRET_KEY, 'base64'));
+
+export const getContent = async (user, repo, proxyPath, token) => {
+  let authToken = token;
+  if (token.startsWith("ey")) {
+    const payload = await decryptJWE(token);
+    if (
+      payload.token &&
+      payload.user &&
+      payload.repo &&
+      payload.user === user &&
+      payload.repo === repo
+    ) {
+      authToken = payload.token;
+    } else {
+      throw new Error('Invalid Token');
+    }
+  }
+
+  try {
+    return await axios.get(`https://raw.githubusercontent.com/${proxyPath}`, {
+      headers: {
+        Authorization: `token ${authToken}`
+      },
+      responseType: 'arraybuffer'
+    });
+  } catch (error) {
+    console.log(error)
+    throw new Error('Failed Github Request');
+  }
+}
 
 export const createJWE = async (user, repo, githubToken) => {
     return await new CompactEncrypt(new TextEncoder().encode(JSON.stringify({
@@ -13,7 +44,7 @@ export const createJWE = async (user, repo, githubToken) => {
     .encrypt(SECRET_KEY);
 };
 
-export const decryptJWE = async (jwe) => {
+const decryptJWE = async (jwe) => {
   try {
     const { plaintext } = await compactDecrypt(jwe, SECRET_KEY);
     const payload = JSON.parse(new TextDecoder().decode(plaintext));

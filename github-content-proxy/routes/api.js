@@ -7,18 +7,14 @@ router.get("/content/:token/*", async (req, res, next) => {
   const { token } = req.params;
   const proxyPath = req.params[0];
 
-  if (!token || !proxyPath) {
-    throw new Error('Bad Request');
-  }
+  if (!token || !proxyPath) throw new Error('Bad Request');
 
   const pathList = proxyPath.split("/");
-  if (pathList.length < 2) {
-    throw new Error('Bad Request');
-  }
+  if (pathList.length < 2) throw new Error('Bad Request');
 
   const response = await getContent(pathList[0], pathList[1], proxyPath, token);
-  res.setHeader('Content-Type', response.headers['content-type']);
-  return res.status(response.status).send(Buffer.from(response.data));
+  res.setHeader('Content-Type', response.contentType);
+  return res.status(response.status).send(response.data);
 });
 
 router.post("/token", async (req, res, next) => {

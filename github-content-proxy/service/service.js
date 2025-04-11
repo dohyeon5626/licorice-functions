@@ -21,12 +21,18 @@ export const getContent = async (user, repo, proxyPath, token) => {
   }
 
   try {
-    return await axios.get(`https://raw.githubusercontent.com/${proxyPath}`, {
+    const response = await axios.get(`https://raw.githubusercontent.com/${proxyPath}`, {
       headers: {
         Authorization: `token ${authToken}`
       },
       responseType: 'arraybuffer'
     });
+
+    return {
+      contentType: response.headers['content-type'],
+      status: response.status,
+      data: Buffer.from(response.data)
+    }
   } catch (error) {
     console.log(error)
     throw new Error('Failed Github Request');

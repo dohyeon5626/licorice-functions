@@ -3,12 +3,11 @@ import { getContent, createJWE } from '../service/service.js';
 
 const router = Router();
 
-router.get("/content/:token/*", async (req, res, next) => {
+router.get("/content/:token/*", async (req, res) => {
   const { token } = req.params;
   const proxyPath = req.params[0];
 
   if (!token || !proxyPath) throw new Error('Bad Request');
-
   const pathList = proxyPath.split("/");
   if (pathList.length < 2) throw new Error('Bad Request');
 

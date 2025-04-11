@@ -4,7 +4,6 @@ import { CompactEncrypt, compactDecrypt } from 'jose';
 let SECRET_KEY = new Uint8Array(Buffer.from(process.env.SECRET_KEY, 'base64'));
 
 export const getContent = async (user, repo, proxyPath, token) => {
-  let authToken = token;
   if (token.startsWith("ey")) {
     const payload = await decryptJWE(token);
     if (
@@ -14,28 +13,24 @@ export const getContent = async (user, repo, proxyPath, token) => {
       payload.user === user &&
       payload.repo === repo
     ) {
-      authToken = payload.token;
+      token = payload.token;
     } else {
       throw new Error('Invalid Token');
     }
   }
 
-  try {
-    const response = await axios.get(`https://raw.githubusercontent.com/${proxyPath}`, {
-      headers: {
-        Authorization: `token ${authToken}`
-      },
-      responseType: 'arraybuffer'
-    });
+  const response = await axios.get(`https://raw.githubusercontent.com/${proxyPath}`, {
+    headers: {
+      Authorization: `token ${token}`
+    },
+    responseType: 'arraybuffer',
+    validateStatus: () => true
+  });
 
-    return {
-      contentType: response.headers['content-type'],
-      status: response.status,
-      data: Buffer.from(response.data)
-    }
-  } catch (error) {
-    console.log(error)
-    throw new Error('Failed Github Request');
+  return {
+    contentType: response.headers['content-type'],
+    status: response.status,
+    data: Buffer.from(response.data)
   }
 }
 

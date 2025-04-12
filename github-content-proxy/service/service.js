@@ -1,11 +1,17 @@
 import axios from "axios";
 import { createJWE, decryptJWEAndGetPayload } from '../util/jwe.js';
+import AppError from "../routes/exception.js";
 
 let SECRET_KEY = new Uint8Array(Buffer.from(process.env.SECRET_KEY, 'base64'));
 
 export const getContent = async (user, repo, proxyPath, token) => {
   if (token.startsWith("ey")) {
-    const payload = await decryptJWEAndGetPayload(token, SECRET_KEY);
+    let payload
+    try {
+      payload = await decryptJWEAndGetPayload(token, SECRET_KEY);
+    } catch (error) {
+      throw new AppError(401, 'Invalid Token');
+    }
     if (
       payload.token &&
       payload.user &&
@@ -16,7 +22,7 @@ export const getContent = async (user, repo, proxyPath, token) => {
     ) {
       token = payload.token;
     } else {
-      throw new Error('Invalid Token');
+      throw new AppError(401, 'Invalid Token');
     }
   }
 

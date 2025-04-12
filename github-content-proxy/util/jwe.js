@@ -7,12 +7,6 @@ export const createJWE = async (payload, secretKey) => {
 };
 
 export const decryptJWEAndGetPayload = async (jwe, secretKey) => {
-  try {
     const { plaintext } = await compactDecrypt(jwe, secretKey);
-    const payload = JSON.parse(new TextDecoder().decode(plaintext));
-    
-    return payload;
-  } catch (error) {
-      throw new Error('Invalid Token');
-  }
+    return JSON.parse(new TextDecoder().decode(plaintext));
 };

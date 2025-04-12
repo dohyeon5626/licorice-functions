@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getContent, createJWE } from '../service/service.js';
+import { getContent, getToken } from '../service/service.js';
 
 const router = Router();
 
@@ -16,16 +16,11 @@ router.get("/content/:token/*", async (req, res) => {
   return res.status(response.status).send(response.data);
 });
 
-router.post("/token", async (req, res, next) => {
+router.post("/token", async (req, res) => {
   const { user, repo, token: githubToken } = req.body;
+  if (!user || !repo || !githubToken) throw new Error('Bad Request');
   
-  if (!user || !repo || !githubToken) {
-    throw new Error('Bad Request');
-  }
-  
-  const token = await createJWE(user, repo, githubToken);
-
-  return res.status(200).json({ token: token });
+  return res.status(200).json({ token: await getToken(user, repo, githubToken) });
 });
 
 export default router;

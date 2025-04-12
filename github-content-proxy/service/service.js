@@ -5,7 +5,7 @@ let SECRET_KEY = new Uint8Array(Buffer.from(process.env.SECRET_KEY, 'base64'));
 
 export const getContent = async (user, repo, proxyPath, token) => {
   if (token.startsWith("ey")) {
-    const payload = await decryptJWE(token);
+    const payload = await decryptJWEAndGetPayload(token, SECRET_KEY);
     if (
       payload.token &&
       payload.user &&
@@ -34,20 +34,24 @@ export const getContent = async (user, repo, proxyPath, token) => {
   }
 }
 
-export const createJWE = async (user, repo, githubToken) => {
-    return await new CompactEncrypt(new TextEncoder().encode(JSON.stringify({
-        user,
-        repo,
-        token: githubToken,
-        exp: Math.floor(Date.now() / 1000) + 3600
-    })))
+export const getToken = async (user, repo, githubToken) => {
+  return await createJWE({
+    user,
+    repo,
+    token: githubToken,
+    exp: Math.floor(Date.now() / 1000) + 3600
+  }, SECRET_KEY);
+}
+
+export const createJWE = async (payload, secretKey) => {
+    return await new CompactEncrypt(new TextEncoder().encode(JSON.stringify(payload)))
     .setProtectedHeader({ alg: 'dir', enc: 'A128GCM' })
-    .encrypt(SECRET_KEY);
+    .encrypt(secretKey);
 };
 
-const decryptJWE = async (jwe) => {
+const decryptJWEAndGetPayload = async (jwe, secretKey) => {
   try {
-    const { plaintext } = await compactDecrypt(jwe, SECRET_KEY);
+    const { plaintext } = await compactDecrypt(jwe, secretKey);
     const payload = JSON.parse(new TextDecoder().decode(plaintext));
     
     return payload;

@@ -1,10 +1,10 @@
-const axios = require("axios");
-const cheerio = require("cheerio");
-const puppeteer = require('puppeteer');
+import axios from "axios";
+import { load } from 'cheerio';
+import puppeteer from "puppeteer";
 
 const CHANNEL_KEY = process.env.CHANNEL_KEY;
 
-exports.run = async () => {
+export const run = async () => {
   const browser = await puppeteer.launch({headless: 'new'});
 
   const [
@@ -44,13 +44,13 @@ exports.run = async () => {
 };
 
 /* Github Html Preview Extension 사용자 수 */
-getGithubHtmlPreviewExtensionUsercount = async () => {
+const getGithubHtmlPreviewExtensionUsercount = async () => {
   const { data } = await axios.get("https://chromewebstore.google.com/detail/github-html-preview/pmpjligbgooljdpakhophgddmcipglna");
-  return cheerio.load(data)('.F9iKBc').contents().eq(2).text().trim().split(" ")[0];
+  return load(data)('.F9iKBc').contents().eq(2).text().trim().split(" ")[0];
 }
 
 /* Github Html Preview Extension 버튼 생성 오류 여부 */
-hasGithubHtmlPreviewExtensionAddButtonSelector = async (browser) => {
+const hasGithubHtmlPreviewExtensionAddButtonSelector = async (browser) => {
   const page = await browser.newPage();
   await page.goto('https://github.com/dohyeon5626/github-html-preview-extension/blob/main/public/popup/popup.html');
 
@@ -58,7 +58,7 @@ hasGithubHtmlPreviewExtensionAddButtonSelector = async (browser) => {
 }
 
 /* Auto Gitkeep Plugin 다운로드 수 */
-getAutoGitkeepPluginDownloadcount = async () => {
+const getAutoGitkeepPluginDownloadcount = async () => {
   const { data } = await axios.get("https://plugins.jetbrains.com/api/plugins/20950");
   return data.downloads;
 }

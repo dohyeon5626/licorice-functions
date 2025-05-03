@@ -1,18 +1,22 @@
 const axios = require("axios");
 const cheerio = require("cheerio");
+const puppeteer = require('puppeteer');
 
 const CHANNEL_KEY = process.env.CHANNEL_KEY;
 
 exports.run = async () => {
+  const browser = await puppeteer.launch({headless: 'new'});
+
   const [
     githubHtmlPreviewExtensionUsercount,
     githubHtmlPreviewExtensionAddButtonSelectorExistence,
     autoGitkeepPluginDownloadcount
   ] = await Promise.all([
     getGithubHtmlPreviewExtensionUsercount(),
-    hasGithubHtmlPreviewExtensionAddButtonSelector(),
+    hasGithubHtmlPreviewExtensionAddButtonSelector(browser),
     getAutoGitkeepPluginDownloadcount()
   ]);
+  await browser.close();
 
   const alarm = [];
 
@@ -46,9 +50,11 @@ getGithubHtmlPreviewExtensionUsercount = async () => {
 }
 
 /* Github Html Preview Extension 버튼 생성 오류 여부 */
-hasGithubHtmlPreviewExtensionAddButtonSelector = async () => {
-  const { data } = await axios.get("https://github.com/dohyeon5626/github-html-preview-extension/blob/main/public/popup/popup.html");
-  return cheerio.load(data)('.Box-sc-g0xbh4-0 .kcLCKF div > a[data-testid=raw-button]').length == 1;
+hasGithubHtmlPreviewExtensionAddButtonSelector = async (browser) => {
+  const page = await browser.newPage();
+  await page.goto('https://github.com/dohyeon5626/github-html-preview-extension/blob/main/public/popup/popup.html');
+
+  return await page.evaluate(() => document.querySelectorAll('.Box-sc-g0xbh4-0 .kcLCKF div > a[data-testid="raw-button"]').length === 1);
 }
 
 /* Auto Gitkeep Plugin 다운로드 수 */

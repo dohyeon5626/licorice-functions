@@ -11,6 +11,8 @@ functions:
     handler: handler.run
     events:
       - schedule: cron(10 0 * * ? *)
+    timeout: 30
+    memorySize: 1024
 
 plugins:
   - serverless-dotenv-plugin

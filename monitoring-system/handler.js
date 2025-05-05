@@ -1,12 +1,19 @@
 import axios from "axios";
-import { load } from 'cheerio';
-import puppeteer from "puppeteer";
+import { load } from "cheerio";
+import puppeteer from "puppeteer-core";
+import chromium from "@sparticuz/chromium-min";
 
 const CHANNEL_KEY = process.env.CHANNEL_KEY;
 
 export const run = async () => {
-  const browser = await puppeteer.launch({headless: 'new'});
-
+  const browser =
+        // await (await import("puppeteer")).launch() // 로컬에서 실행시
+        await puppeteer.launch({
+            args: chromium.args,
+            defaultViewport: chromium.defaultViewport,
+            executablePath: await chromium.executablePath('https://github.com/Sparticuz/chromium/releases/download/v119.0.2/chromium-v119.0.2-pack.tar'),
+            headless: chromium.headless,
+        });
   const [
     githubHtmlPreviewExtensionUsercount,
     githubHtmlPreviewExtensionAddButtonSelectorExistence,
@@ -19,7 +26,6 @@ export const run = async () => {
   await browser.close();
 
   const alarm = [];
-
   alarm.push(axios.post("https://ntfy.sh", {
     "topic": CHANNEL_KEY,
     "message": `Github Html Preview 유저 수: ${githubHtmlPreviewExtensionUsercount}명\nAuto Gitkeep 누적 다운로드: ${autoGitkeepPluginDownloadcount}명`,
@@ -28,7 +34,6 @@ export const run = async () => {
     "priority": 3,
     "click": "none"
   }));
-
   if (!githubHtmlPreviewExtensionAddButtonSelectorExistence) {
     alarm.push(axios.post("https://ntfy.sh", {
       "topic": CHANNEL_KEY,
@@ -39,7 +44,6 @@ export const run = async () => {
       "click": "none"
     }));
   }
-
   await Promise.all(alarm);
 };
 

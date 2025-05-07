@@ -57,8 +57,7 @@ const getGithubHtmlPreviewExtensionUsercount = async () => {
 const hasGithubHtmlPreviewExtensionAddButtonSelector = async (browser) => {
   const page = await browser.newPage();
   await page.goto('https://github.com/dohyeon5626/github-html-preview-extension/blob/main/public/popup/popup.html');
-
-  return await page.evaluate(() => document.querySelectorAll('.Box-sc-g0xbh4-0 .kcLCKF div > a[data-testid="raw-button"]').length === 1);
+  return await page.evaluate(() => document.querySelectorAll(".Box-sc-g0xbh4-0 .prc-ButtonGroup-ButtonGroup-vcMeG")[0].querySelectorAll('div > a[data-testid="raw-button"]').length === 1);
 }
 
 /* Auto Gitkeep Plugin 다운로드 수 */

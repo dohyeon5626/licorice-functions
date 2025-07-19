@@ -15,20 +15,22 @@ export const run = async () => {
             headless: chromium.headless,
         });
   const [
-    githubHtmlPreviewExtensionUsercount,
+    githubHtmlPreviewExtensionUserCount,
     githubHtmlPreviewExtensionAddButtonSelectorExistence,
-    autoGitkeepPluginDownloadcount
+    autoGitkeepPluginDownloadCount,
+    spreadsheetsFilterExtensionAddInputBoxSelectorExistence
   ] = await Promise.all([
-    getGithubHtmlPreviewExtensionUsercount(),
+    getGithubHtmlPreviewExtensionUserCount(),
     hasGithubHtmlPreviewExtensionAddButtonSelector(browser),
-    getAutoGitkeepPluginDownloadcount()
+    getAutoGitkeepPluginDownloadCount(),
+    hasSpreadsheetsFilterExtensionAddInputBoxSelector()
   ]);
   await browser.close();
 
   const alarm = [];
   alarm.push(axios.post("https://ntfy.sh", {
     "topic": CHANNEL_KEY,
-    "message": `Github Html Preview 유저 수: ${githubHtmlPreviewExtensionUsercount}명\nAuto Gitkeep 누적 다운로드: ${autoGitkeepPluginDownloadcount}명`,
+    "message": `Github Html Preview 유저 수: ${githubHtmlPreviewExtensionUserCount}명\nAuto Gitkeep 누적 다운로드: ${autoGitkeepPluginDownloadCount}명`,
     "title": new Date().toISOString().split("T")[0],
     "tags": ["computer"],
     "priority": 3,
@@ -44,11 +46,21 @@ export const run = async () => {
       "click": "none"
     }));
   }
+  if (!spreadsheetsFilterExtensionAddInputBoxSelectorExistence) {
+    alarm.push(axios.post("https://ntfy.sh", {
+      "topic": CHANNEL_KEY,
+      "message": `Spreadsheets Filter Extension 문제 확인 필요`,
+      "title": "오류 발생",
+      "tags": ["warning"],
+      "priority": 5,
+      "click": "none"
+    }));
+  }
   await Promise.all(alarm);
 };
 
 /* Github Html Preview Extension 사용자 수 */
-const getGithubHtmlPreviewExtensionUsercount = async () => {
+const getGithubHtmlPreviewExtensionUserCount = async () => {
   const { data } = await axios.get("https://chromewebstore.google.com/detail/github-html-preview/pmpjligbgooljdpakhophgddmcipglna");
   return load(data)('.F9iKBc').contents().eq(2).text().trim().split(" ")[0];
 }
@@ -61,7 +73,13 @@ const hasGithubHtmlPreviewExtensionAddButtonSelector = async (browser) => {
 }
 
 /* Auto Gitkeep Plugin 다운로드 수 */
-const getAutoGitkeepPluginDownloadcount = async () => {
+const getAutoGitkeepPluginDownloadCount = async () => {
   const { data } = await axios.get("https://plugins.jetbrains.com/api/plugins/20950");
   return data.downloads;
+}
+
+/* Spreadsheets Filter Extension 검색 입력 박스 생성 오류 여부 */
+const hasSpreadsheetsFilterExtensionAddInputBoxSelector = async () => {
+  const { data } = await axios.get("https://docs.google.com/spreadsheets/d/1TAwJpKLoeM4xXTmfdfQqxvfEYXL8j8yaG5mTAb93kfs/edit?gid=0#gid=0");
+  return load(data)('#waffle-disclaimer-bar').next().children().first().length > 0;
 }

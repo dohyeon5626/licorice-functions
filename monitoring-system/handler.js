@@ -18,11 +18,13 @@ export const run = async () => {
     githubHtmlPreviewExtensionUserCount,
     githubHtmlPreviewExtensionAddButtonSelectorExistence,
     autoGitkeepPluginDownloadCount,
+    spreadsheetsFilterExtensionUserCount,
     spreadsheetsFilterExtensionAddInputBoxSelectorExistence
   ] = await Promise.all([
     getGithubHtmlPreviewExtensionUserCount(),
     hasGithubHtmlPreviewExtensionAddButtonSelector(browser),
     getAutoGitkeepPluginDownloadCount(),
+    getSpreadsheetsFilterExtensionUserCount(),
     hasSpreadsheetsFilterExtensionAddInputBoxSelector()
   ]);
   await browser.close();
@@ -30,7 +32,7 @@ export const run = async () => {
   const alarm = [];
   alarm.push(axios.post("https://ntfy.sh", {
     "topic": CHANNEL_KEY,
-    "message": `Github Html Preview 유저 수: ${githubHtmlPreviewExtensionUserCount}명\nAuto Gitkeep 누적 다운로드: ${autoGitkeepPluginDownloadCount}명`,
+    "message": `Github Html Preview 유저 수: ${githubHtmlPreviewExtensionUserCount}명\nAuto Gitkeep 누적 다운로드: ${autoGitkeepPluginDownloadCount}명\nSpreadSheets Filter 유저 수: ${spreadsheetsFilterExtensionUserCount}`,
     "title": new Date().toISOString().split("T")[0],
     "tags": ["computer"],
     "priority": 3,
@@ -76,6 +78,12 @@ const hasGithubHtmlPreviewExtensionAddButtonSelector = async (browser) => {
 const getAutoGitkeepPluginDownloadCount = async () => {
   const { data } = await axios.get("https://plugins.jetbrains.com/api/plugins/20950");
   return data.downloads;
+}
+
+/* Spreadsheets Filter Extension 사용자 수 */
+const getSpreadsheetsFilterExtensionUserCount = async () => {
+  const { data } = await axios.get("https://chromewebstore.google.com/detail/spreadsheets-filter/gloabogbelmelahemofhdbkkngeimgaa");
+  return load(data)('.F9iKBc').contents().eq(2).text().trim().split(" ")[0];
 }
 
 /* Spreadsheets Filter Extension 검색 입력 박스 생성 오류 여부 */

@@ -7,14 +7,15 @@
 **github-content-proxy**
 ```
 1. 깃허브 content를 header없이 url로 가져오기 위한 proxy api
-  GET /github-content-proxy/content/{token}/{proxy+}
+- GET /github-content-proxy/content/{token}/{proxy+}
 
 2. 깃허브 content proxy api 사용시 github token을 숨기기 위한 jwt 발급 api
-  POST /github-content-proxy/token
+- POST /github-content-proxy/token
 ```
 
 **monitoring-system**
 ```
-1. Github Html Preview Extension, Auto Gitkeep Plugin의 현재 상태를 알림 보내주는 Batch
-  cron(10 0 * * ? *) // 매일 KST 오전 9시 10분
+1. Github Html Preview Extension, Auto Gitkeep Plugin, Spreadsheets Filter Extension의 현재 상태를 알림 보내주는 Batch
+   (사용자 수, 확장프로그램이 의존하고 있는 웹 선택자의 변경 여부)
+- cron(10 0 * * ? *) // 매일 KST 오전 9시 10분
 ```

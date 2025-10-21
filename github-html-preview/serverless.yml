@@ -1,6 +1,6 @@
 org: dohyeon5626
 app: licorice-functions
-service: github-content-proxy
+service: github-html-preview
 
 provider:
   name: aws

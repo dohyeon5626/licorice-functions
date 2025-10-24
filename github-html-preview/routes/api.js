@@ -1,6 +1,6 @@
 import asyncHandler from 'express-async-handler';
 import { Router } from "express";
-import { getContent, getToken } from '../service/service.js';
+import { getContent, getToken, getGithubAuthorizeUrl } from '../service/service.js';
 import AppError from './exception.js';
 
 const router = Router();
@@ -24,5 +24,11 @@ router.post("/token", asyncHandler(async (req, res) => {
   
   return res.status(200).json({ token: await getToken(user, repo, githubToken) });
 }));
+
+router.get('/github-oauth/authorize', (req, res) => {
+  const { redirect_uri: redirectUri } = req.query;
+  if (!redirectUri) throw new AppError(404, 'Bad Request');
+  res.redirect(getGithubAuthorizeUrl(redirectUri));
+});
 
 export default router;

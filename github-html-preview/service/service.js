@@ -5,7 +5,6 @@ import AppError from "../routes/exception.js";
 const SECRET_KEY = new Uint8Array(Buffer.from(process.env.SECRET_KEY, 'base64'));
 const GITHUB_CLIENT_ID = process.env.GITHUB_CLIENT_ID;
 const GITHUB_CLIENT_SECRET = process.env.GITHUB_CLIENT_SECRET;
-const STATE = process.env.STATE;
 
 export const getContent = async (user, repo, proxyPath, token) => {
   if (token.startsWith("ey")) {
@@ -54,5 +53,33 @@ export const getToken = async (user, repo, githubToken) => {
 }
 
 export const getGithubAuthorizeUrl = (redirectUri) => {
-  return `https://github.com/login/oauth/authorize?client_id=${GITHUB_CLIENT_ID}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=read:repo&state=${STATE}`
+  return `https://github.com/login/oauth/authorize?client_id=${GITHUB_CLIENT_ID}&redirect_uri=${redirectUri}&scope=read:repo`;
+}
+
+export const getGithubToken = async (code, redirectUri) => {
+  return axios.post(
+    `https://github.com/login/oauth/access_token`,
+    {
+      client_id: GITHUB_CLIENT_ID,
+      client_secret: GITHUB_CLIENT_SECRET,
+      redirect_uri: redirectUri,
+      code
+    },
+    {
+      headers: {
+        Accept: 'application/json'
+      }
+    }).then(res => res.data).then(data => {
+      if (data.error) throw new AppError(401, 'Invalid Authentication Information');
+      return {
+        access: {
+          token: data.access_token,
+          expiresIn: data.expires_in
+        },
+        refresh: {
+          token: data.refresh_token,
+          expiresIn: data.refresh_token_expires_in
+        }
+      }
+    }).catch(() => { throw new AppError(401, 'Invalid Authentication Information'); });
 }

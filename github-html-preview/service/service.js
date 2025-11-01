@@ -114,3 +114,31 @@ export const getGithubToken = async (code, redirectUri) => {
       }
     }).catch(() => { throw new AppError(401, 'Invalid Authentication Information'); });
 }
+
+export const refreshGithubAccessToken = async(refreshToken) => {
+  return axios.post(
+    `https://github.com/login/oauth/access_token`,
+    {
+      client_id: GITHUB_CLIENT_ID,
+      client_secret: GITHUB_CLIENT_SECRET,
+      grant_type: "refresh_token",
+      refresh_token: refreshToken
+    },
+    {
+      headers: {
+        Accept: 'application/json'
+      }
+    }).then(res => res.data).then(data => {
+      if (data.error) throw new AppError(401, 'Invalid Authentication Information');
+      return {
+        access: {
+          token: data.access_token,
+          expiresIn: data.expires_in
+        },
+        refresh: {
+          token: data.refresh_token,
+          expiresIn: data.refresh_token_expires_in
+        }
+      }
+    }).catch(() => { throw new AppError(401, 'Invalid Authentication Information'); });
+}

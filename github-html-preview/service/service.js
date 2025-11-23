@@ -3,8 +3,14 @@ import { createJWE, decryptJWEAndGetPayload } from '../util/jwe.js';
 import AppError from "../routes/exception.js";
 
 const SECRET_KEY = new Uint8Array(Buffer.from(process.env.SECRET_KEY, 'base64'));
+
 const GITHUB_CLIENT_ID = process.env.GITHUB_CLIENT_ID;
 const GITHUB_CLIENT_SECRET = process.env.GITHUB_CLIENT_SECRET;
+
+const TEST_GITHUB_CLIENT_ID = process.env.TEST_GITHUB_CLIENT_ID;
+const TEST_GITHUB_CLIENT_SECRET = process.env.TEST_GITHUB_CLIENT_SECRET;
+
+const EXTENSION_ID = 'pmpjligbgooljdpakhophgddmcipglna'
 
 export const getContent = async (user, repo, proxyPath, token) => {
   let response;
@@ -80,19 +86,21 @@ export const getToken = async (user, repo, githubToken, githubTokenList) => {
       exp: Math.floor(Date.now() / 1000) + 3600
     }, SECRET_KEY);
   }
-  
 }
 
+const getGithubClientId = (redirectUri) => redirectUri.includes(EXTENSION_ID) ? GITHUB_CLIENT_ID : TEST_GITHUB_CLIENT_ID;
+const getGithubClientSecret = (redirectUri) => redirectUri.includes(EXTENSION_ID) ? GITHUB_CLIENT_SECRET : TEST_GITHUB_CLIENT_SECRET;
+
 export const getGithubAuthorizeUrl = (redirectUri) => {
-  return `https://github.com/login/oauth/authorize?client_id=${GITHUB_CLIENT_ID}&redirect_uri=${redirectUri}&scope=read:repo`;
+  return `https://github.com/login/oauth/authorize?client_id=${getGithubClientId(redirectUri)}&redirect_uri=${redirectUri}&scope=repo`;
 }
 
 export const getGithubToken = async (code, redirectUri) => {
   return axios.post(
     `https://github.com/login/oauth/access_token`,
     {
-      client_id: GITHUB_CLIENT_ID,
-      client_secret: GITHUB_CLIENT_SECRET,
+      client_id: getGithubClientId(redirectUri),
+      client_secret: getGithubClientSecret(redirectUri),
       redirect_uri: redirectUri,
       code
     },
@@ -102,43 +110,9 @@ export const getGithubToken = async (code, redirectUri) => {
       }
     }).then(res => res.data).then(data => {
       if (data.error) throw new AppError(401, 'Invalid Authentication Information');
+      console.log(data);
       return {
-        access: {
-          token: data.access_token,
-          expiresIn: data.expires_in
-        },
-        refresh: {
-          token: data.refresh_token,
-          expiresIn: data.refresh_token_expires_in
-        }
-      }
-    }).catch(() => { throw new AppError(401, 'Invalid Authentication Information'); });
-}
-
-export const refreshGithubAccessToken = async(refreshToken) => {
-  return axios.post(
-    `https://github.com/login/oauth/access_token`,
-    {
-      client_id: GITHUB_CLIENT_ID,
-      client_secret: GITHUB_CLIENT_SECRET,
-      grant_type: "refresh_token",
-      refresh_token: refreshToken
-    },
-    {
-      headers: {
-        Accept: 'application/json'
-      }
-    }).then(res => res.data).then(data => {
-      if (data.error) throw new AppError(401, 'Invalid Authentication Information');
-      return {
-        access: {
-          token: data.access_token,
-          expiresIn: data.expires_in
-        },
-        refresh: {
-          token: data.refresh_token,
-          expiresIn: data.refresh_token_expires_in
-        }
+        token: data.access_token
       }
     }).catch(() => { throw new AppError(401, 'Invalid Authentication Information'); });
 }
